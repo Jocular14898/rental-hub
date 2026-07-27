@@ -1,0 +1,16 @@
+[Unit]
+Description=Rental Hub API
+After=network.target
+
+[Service]
+Type=simple
+User=karasko
+WorkingDirectory=/home/karasko/Desktop/rental-hub
+Environment=PATH=/home/karasko/Desktop/rental-hub/venv/bin
+Environment=FLASK_ENV=production
+ExecStart=/home/karasko/Desktop/rental-hub/venv/bin/gunicorn --bind 0.0.0.0:8200 --workers 4 run:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

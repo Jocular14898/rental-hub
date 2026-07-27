@@ -1,0 +1,52 @@
+name: Build Flutter APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_base_url:
+        description: 'API Base URL (e.g. https://your-app.onrender.com/api)'
+        required: true
+        default: 'http://192.168.100.53:8200/api'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.x'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build release APK
+        run: |
+          flutter build apk --release \
+            --dart-define=API_BASE_URL=${{ inputs.api_base_url }} \
+            --split-per-abi
+
+      - name: Upload APK (arm64-v8a)
+        uses: actions/upload-artifact@v4
+        with:
+          name: rental-hub-arm64-v8a
+          path: mobile/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+
+      - name: Upload APK (armeabi-v7a)
+        uses: actions/upload-artifact@v4
+        with:
+          name: rental-hub-armeabi-v7a
+          path: mobile/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+
+      - name: Upload APK (x86_64)
+        uses: actions/upload-artifact@v4
+        with:
+          name: rental-hub-x86_64
+          path: mobile/build/app/outputs/flutter-apk/app-x86_64-release.apk

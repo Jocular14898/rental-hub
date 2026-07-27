@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+*.db
+*.sqlite3
+
+# Flutter
+mobile/.dart_tool/
+mobile/.packages
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.pub-cache/
+mobile/pubspec.lock
+
+# Uploads
+uploads/*
+
+# Environment
+.env
+
+# OS
+.DS_Store
+Thumbs.db

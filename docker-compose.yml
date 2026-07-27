@@ -1,0 +1,35 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8200:8200"
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-jwt-change-me}
+      - DATABASE_URL=sqlite:///data/rental_hub.sqlite3
+      - MPESA_CONSUMER_KEY=${MPESA_CONSUMER_KEY:-}
+      - MPESA_CONSUMER_SECRET=${MPESA_CONSUMER_SECRET:-}
+      - MPESA_PASSKEY=${MPESA_PASSKEY:-}
+      - MPESA_SHORTCODE=${MPESA_SHORTCODE:-174379}
+      - MPESA_ENV=${MPESA_ENV:-sandbox}
+    volumes:
+      - api_data:/app/data
+      - api_uploads:/app/uploads
+    restart: unless-stopped
+
+  # Uncomment for PostgreSQL:
+  # db:
+  #   image: postgres:16-alpine
+  #   environment:
+  #     - POSTGRES_DB=rental_hub
+  #     - POSTGRES_USER=karasko
+  #     - POSTGRES_PASSWORD=${DB_PASSWORD:-changeme}
+  #   volumes:
+  #     - pg_data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+
+volumes:
+  api_data:
+  api_uploads:
+  # pg_data:
