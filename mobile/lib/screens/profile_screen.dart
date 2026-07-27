@@ -28,9 +28,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       _profile = await api.getProfile();
       final sub = await api.getSubscriptionStatus();
-      setState(() { _subStatus = sub; });
+      if (mounted) setState(() { _subStatus = sub; });
     } catch (_) {}
     if (mounted) setState(() => _loading = false);
+  }
+
+  Map<String, dynamic> _userData() {
+    if (_profile != null) return _profile!;
+    final u = context.read<AuthService>().currentUser;
+    if (u == null) return {};
+    return {
+      'name': u.name,
+      'email': u.email,
+      'phone': u.phone,
+      'user_type': u.userType,
+    };
   }
 
   Future<void> _subscribe(String plan) async {
@@ -41,7 +53,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(res['mpesa']?['message'] ?? 'Subscription initiated')),
       );
-      _loadSub();
+      _load();
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
     }
@@ -50,9 +62,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthService>();
-    final user = _profile ?? auth.currentUser;
-    final isLandlord = user?['user_type'] == 'landlord';
-    final isAgent = user?['user_type'] == 'agent';
+    final user = _userData();
+    final isLandlord = user['user_type'] == 'landlord';
+    final isAgent = user['user_type'] == 'agent';
     final needsSub = isLandlord || isAgent;
 
     return Scaffold(
@@ -69,13 +81,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   CircleAvatar(
                     radius: 32,
-                    child: Text((user?['name'] ?? '?').toString()[0].toUpperCase()),
+                    child: Text((user['name'] ?? '?').toString()[0].toUpperCase()),
                   ),
                   const SizedBox(height: 12),
-                  Text(user?['name']?.toString() ?? '', style: Theme.of(context).textTheme.titleMedium),
-                  Text(user?['email']?.toString() ?? ''),
-                  Text('+${user?['phone']?.toString() ?? ''}'),
-                  Chip(label: Text((user?['user_type']?.toString() ?? '').toUpperCase())),
+                  Text(user['name']?.toString() ?? '', style: Theme.of(context).textTheme.titleMedium),
+                  Text(user['email']?.toString() ?? ''),
+                  Text('+${user['phone']?.toString() ?? ''}'),
+                  Chip(label: Text((user['user_type']?.toString() ?? '').toUpperCase())),
                 ],
               ),
             ),
@@ -90,7 +102,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     Text('Subscription', style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 8),
-                    if (_loadingSub)
+                    if (_loading)
                       const LinearProgressIndicator()
                     else ...[
                       if (_subStatus != null && _subStatus!['active'] == true)
