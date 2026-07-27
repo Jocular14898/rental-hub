@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rental Hub</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1419;--surface:#1a2332;--surface2:#243447;--primary:#1d9bf0;--primary-hover:#1a8cd8;--danger:#f4212e;--success:#00ba7c;--text:#e1e8ed;--text2:#8b98a5;--border:#2f3d4e;--radius:12px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:var(--primary);text-decoration:none}
+input,select,textarea{width:100%;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--primary)}
+textarea{resize:vertical;min-height:80px}
+button{cursor:pointer;padding:10px 20px;border:none;border-radius:8px;font-size:14px;font-weight:600}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-hover)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{border-color:var(--primary);color:var(--primary)}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{opacity:.9}
+.card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:12px;border:1px solid var(--border)}
+.card:hover{border-color:var(--primary)}
+.hidden{display:none!important}
+.flex{display:flex}.flex-col{flex-direction:column}.gap-8{gap:8px}.gap-12{gap:12px}.gap-16{gap:16px}.items-center{align-items:center}.justify-between{justify-content:space-between}.flex-wrap{flex-wrap:wrap}.flex-1{flex:1}
+.text-lg{font-size:18px;font-weight:700}.text-sm{font-size:12px;color:var(--text2)}.text-center{text-align:center}
+.mt-8{margin-top:8px}.mt-16{margin-top:16px}.mb-8{margin-bottom:8px}.mb-16{margin-bottom:16px}.p-16{padding:16px}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.chip{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;background:var(--surface2)}
+.chip-primary{background:var(--primary);color:#fff}
+.badge{position:absolute;top:-6px;right:-6px;background:var(--danger);color:#fff;border-radius:50%;width:20px;height:20px;font-size:11px;display:flex;align-items:center;justify-content:center}
+.toast{position:fixed;top:20px;right:20px;padding:12px 20px;border-radius:8px;color:#fff;font-weight:600;z-index:9999;animation:slideIn .3s}
+.toast-success{background:var(--success)}.toast-error{background:var(--danger)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite;margin:40px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Auth */
+#auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.auth-card{width:100%;max-width:420px;background:var(--surface);border-radius:var(--radius);padding:32px;border:1px solid var(--border)}
+.auth-tabs{display:flex;margin-bottom:24px;border-bottom:1px solid var(--border)}
+.auth-tab{flex:1;padding:12px;text-align:center;cursor:pointer;font-weight:600;color:var(--text2);border-bottom:2px solid transparent;transition:.2s}
+.auth-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+.auth-form .form-group{margin-bottom:16px}
+.auth-form label{display:block;margin-bottom:6px;font-size:13px;color:var(--text2)}
+.auth-form button{width:100%;padding:14px;font-size:16px}
+
+/* Navbar */
+#navbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;position:sticky;top:0;z-index:100}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto;height:56px}
+.nav-brand{font-size:20px;font-weight:800;color:var(--primary)}
+.nav-links{display:flex;gap:4px}
+.nav-link{padding:8px 14px;border-radius:8px;color:var(--text2);font-weight:500;font-size:13px;cursor:pointer;position:relative;transition:.2s}
+.nav-link:hover,.nav-link.active{background:var(--surface2);color:var(--text)}
+.nav-link i{margin-right:6px}
+
+/* Main content */
+#main-page{max-width:1200px;margin:0 auto;padding:16px}
+.page-section{display:none}.page-section.active{display:block}
+
+/* Property card */
+.prop-img{width:100%;height:180px;object-fit:cover;border-radius:8px;background:var(--surface2)}
+.prop-card .prop-img{margin-bottom:12px}
+.prop-price{font-size:18px;font-weight:700;color:var(--primary)}
+.prop-title{font-size:15px;font-weight:600;margin:4px 0}
+.prop-location{font-size:13px;color:var(--text2)}
+.prop-meta{display:flex;gap:12px;margin:8px 0;font-size:12px;color:var(--text2)}
+.heart-btn{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:4px;transition:.2s}
+.heart-btn.liked{color:var(--danger)}
+
+/* Detail page */
+.detail-img{width:100%;max-height:400px;object-fit:cover;border-radius:var(--radius)}
+.detail-section{margin-top:24px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.detail-item{padding:12px;background:var(--surface2);border-radius:8px;text-align:center}
+.detail-item .label{font-size:12px;color:var(--text2)}
+.detail-item .value{font-size:16px;font-weight:600;margin-top:4px}
+
+/* Modal */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--surface);border-radius:var(--radius);padding:24px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;border:1px solid var(--border)}
+.modal h2{margin-bottom:16px}
+
+/* Search */
+.search-bar{display:flex;gap:8px;margin-bottom:16px}
+.search-bar input{flex:1}
+.search-bar button{padding:12px 24px}
+
+/* Responsive */
+@media(max-width:640px){
+  .nav-links{gap:0}
+  .nav-link{padding:6px 10px;font-size:12px;white-space:nowrap}
+  .nav-link span{display:none}
+  .grid-2{grid-template-columns:1fr}
+  .detail-grid{grid-template-columns:1fr}
+  .auth-card{padding:20px}
+}
+
+@media(min-width:641px){
+  .prop-card{display:flex;gap:16px}
+  .prop-card .prop-img{width:240px;height:160px;margin-bottom:0;flex-shrink:0}
+}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- AUTH PAGE -->
+<div id="auth-page">
+  <div class="auth-card">
+    <div style="text-align:center;margin-bottom:24px"><i class="fas fa-building" style="font-size:40px;color:var(--primary)"></i><div style="font-size:24px;font-weight:800;margin-top:8px">Rental Hub</div></div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchAuth('login')">Sign In</div>
+      <div class="auth-tab" onclick="switchAuth('register')">Register</div>
+    </div>
+    <div id="auth-login" class="auth-form">
+      <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-pass" placeholder="••••••"></div>
+      <button class="btn-primary" onclick="login()">Sign In</button>
+    </div>
+    <div id="auth-register" class="auth-form hidden">
+      <div class="form-group"><label>Name</label><input type="text" id="reg-name" placeholder="John Doe"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="you@example.com"></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="reg-phone" placeholder="+2547XXXXXXXX"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="reg-pass" placeholder="••••••"></div>
+      <div class="form-group"><label>I am a</label>
+        <select id="reg-type"><option value="tenant">Tenant (looking to rent)</option><option value="landlord">Landlord (listing properties)</option><option value="agent">Agent (managing properties)</option></select>
+      </div>
+      <button class="btn-primary" onclick="register()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="main-page" class="hidden">
+  <div id="navbar">
+    <div class="nav-inner">
+      <div class="nav-brand"><i class="fas fa-building"></i> RentalHub</div>
+      <div class="nav-links">
+        <div class="nav-link active" data-page="home" onclick="navigate('home')"><i class="fas fa-home"></i><span> Home</span></div>
+        <div class="nav-link" data-page="favorites" onclick="navigate('favorites')"><i class="fas fa-heart"></i><span> Saved</span></div>
+        <div class="nav-link" data-page="bookings" onclick="navigate('bookings')"><i class="fas fa-calendar"></i><span> Bookings</span></div>
+        <div class="nav-link" data-page="reminders" id="nav-reminders" onclick="navigate('reminders')"><i class="fas fa-bell"></i><span> Reminders</span></div>
+        <div class="nav-link" data-page="profile" onclick="navigate('profile')"><i class="fas fa-user"></i><span> Profile</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="content">
+    <!-- Home -->
+    <div class="page-section active" id="page-home">
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Search by location, title..." onkeydown="if(event.key==='Enter')searchProps()">
+        <button class="btn-primary" onclick="searchProps()"><i class="fas fa-search"></i></button>
+        <button class="btn-outline" onclick="showPostProperty()" id="btn-post-prop"><i class="fas fa-plus"></i> Post</button>
+      </div>
+      <div id="props-loading"><div class="spinner"></div></div>
+      <div id="props-grid" class="grid-2 hidden"></div>
+      <div id="props-empty" class="hidden text-center" style="padding:40px;color:var(--text2)"><i class="fas fa-building" style="font-size:48px;margin-bottom:16px"></i><p>No properties found</p></div>
+      <div id="props-more" class="hidden text-center mt-16"><button class="btn-outline" onclick="loadMore()">Load More</button></div>
+    </div>
+
+    <!-- Favorites -->
+    <div class="page-section" id="page-favorites">
+      <h2 style="margin-bottom:16px"><i class="fas fa-heart"></i> Saved Properties</h2>
+      <div id="fav-loading"><div class="spinner"></div></div>
+      <div id="fav-grid" class="grid-2 hidden"></div>
+      <div id="fav-empty" class="hidden text-center" style="padding:40px;color:var(--text2)"><i class="fas fa-heart" style="font-size:48px;margin-bottom:16px"></i><p>No saved properties yet</p></div>
+    </div>
+
+    <!-- Bookings -->
+    <div class="page-section" id="page-bookings">
+      <h2 style="margin-bottom:16px"><i class="fas fa-calendar"></i> My Bookings</h2>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button class="btn-outline" id="bookings-tab-tenant" onclick="switchBookingsTab('tenant')">My Requests</button>
+        <button class="btn-outline" id="bookings-tab-landlord" onclick="switchBookingsTab('landlord')">Received</button>
+      </div>
+      <div id="bookings-content"></div>
+    </div>
+
+    <!-- Reminders -->
+    <div class="page-section" id="page-reminders">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h2><i class="fas fa-bell"></i> Reminders</h2>
+        <button class="btn-primary" onclick="showReminderForm()"><i class="fas fa-plus"></i> Add</button>
+      </div>
+      <div id="reminders-content"></div>
+    </div>
+
+    <!-- Profile -->
+    <div class="page-section" id="page-profile">
+      <h2 style="margin-bottom:16px"><i class="fas fa-user"></i> Profile</h2>
+      <div id="profile-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal-area"></div>
+
+<script>
+const API = window.location.origin + '/api';
+let token = localStorage.getItem('token') || '';
+let user = JSON.parse(localStorage.getItem('user') || 'null');
+let currentPage = 1, searchQuery = '';
+let allProps = [], currentProp = null;
+let editingReminder = null, editingProperty = null;
+
+// Helpers
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.innerHTML = `<div class="toast toast-${type}">${msg}</div>`;
+  setTimeout(()=>t.innerHTML='', 3000);
+}
+
+function api(path, opts={}) {
+  const headers = {'Content-Type':'application/json'};
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  return fetch(API + path, {...opts, headers}).then(r=>r.json().then(d=>({ok:r.ok,status:r.status,data:d})).catch(()=>({ok:false,status:r.status,data:{}})));
+}
+
+function show(el) { document.getElementById(el).classList.remove('hidden') }
+function hide(el) { document.getElementById(el).classList.add('hidden') }
+
+// Auth
+function switchAuth(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.toggle('active',t.textContent.trim().toLowerCase().includes(tab)));
+  hide('auth-login'); hide('auth-register');
+  show('auth-' + tab);
+}
+
+async function login() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-pass').value;
+  if (!email||!password) return toast('Fill all fields','error');
+  const {ok,data} = await api('/auth/login', {method:'POST', body:JSON.stringify({email,password})});
+  if (!ok) return toast(data.msg||data.message||'Login failed','error');
+  token = data.access_token||data.token;
+  user = data.user;
+  localStorage.setItem('token', token);
+  localStorage.setItem('user', JSON.stringify(user));
+  enterApp();
+}
+
+async function register() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const password = document.getElementById('reg-pass').value;
+  const user_type = document.getElementById('reg-type').value;
+  if (!name||!email||!phone||!password) return toast('Fill all fields','error');
+  const {ok,data} = await api('/auth/register', {method:'POST', body:JSON.stringify({name,email,phone,password,user_type})});
+  if (!ok) return toast(data.msg||data.message||'Registration failed','error');
+  toast('Account created! Signing in...');
+  await login();
+}
+
+function enterApp() {
+  document.getElementById('auth-page').classList.add('hidden');
+  document.getElementById('main-page').classList.remove('hidden');
+  const ut = getUserType();
+  document.getElementById('btn-post-prop').classList.toggle('hidden', ut!=='landlord');
+  document.getElementById('nav-reminders').classList.toggle('hidden', ut!=='agent'&&ut!=='landlord');
+  navigate('home');
+}
+
+function logout() {
+  token = ''; user = null;
+  localStorage.removeItem('token'); localStorage.removeItem('user');
+  document.getElementById('main-page').classList.add('hidden');
+  document.getElementById('auth-page').classList.remove('hidden');
+}
+
+function getUserType() { return user?.user_type || ''; }
+
+// Navigation
+function navigate(page) {
+  document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(l=>l.classList.toggle('active',l.dataset.page===page));
+  if (page==='home') { loadProps(); }
+  else if (page==='favorites') loadFavorites();
+  else if (page==='bookings') loadBookings();
+  else if (page==='reminders') loadReminders();
+  else if (page==='profile') loadProfile();
+}
+
+// Properties
+async function loadProps(reset=true) {
+  if (reset) { currentPage=1; allProps=[]; }
+  show('props-loading'); hide('props-grid'); hide('props-empty'); hide('props-more');
+  const q = searchQuery ? '&search='+encodeURIComponent(searchQuery) : '';
+  const {ok,data} = await api('/properties?page='+currentPage+'&per_page=12'+q);
+  if (!ok) { hide('props-loading'); show('props-empty'); document.querySelector('#props-empty p').textContent='Failed to load'; return; }
+  const list = data.properties||data||[];
+  allProps = reset ? list : [...allProps, ...list];
+  hide('props-loading');
+  if (allProps.length===0) { show('props-empty'); return; }
+  show('props-grid');
+  document.getElementById('props-grid').innerHTML = allProps.map(p=>propCard(p)).join('');
+  if (list.length>=12) show('props-more');
+}
+
+function propCard(p) {
+  const img = p.photos&&p.photos[0] ? API.replace('/api','')+'/uploads/'+p.photos[0] : '';
+  return `<div class="card prop-card" onclick="showDetail('${p.id}')">
+    ${img ? `<img class="prop-img" src="${img}" alt="" onerror="this.src=''">` : '<div class="prop-img" style="display:flex;align-items:center;justify-content:center;color:var(--text2)"><i class="fas fa-image" style="font-size:40px"></i></div>'}
+    <div class="flex-1">
+      <div class="flex justify-between items-center">
+        <span class="prop-price">KSh ${(+p.price).toLocaleString()}/mo</span>
+        <button class="heart-btn" onclick="event.stopPropagation();toggleFav('${p.id}')"><i class="${p.is_favorited?'fas':'far'} fa-heart"></i></button>
+      </div>
+      <div class="prop-title">${p.title||'Untitled'}</div>
+      <div class="prop-location"><i class="fas fa-map-marker-alt"></i> ${p.location||'N/A'}</div>
+      <div class="prop-meta">
+        <span><i class="fas fa-bed"></i> ${p.bedrooms||'N/A'}</span>
+        <span><i class="fas fa-bath"></i> ${p.bathrooms||'N/A'}</span>
+        <span>${p.property_type||''}</span>
+      </div>
+      <div class="chip chip-primary">${p.status||'available'}</div>
+    </div>
+  </div>`;
+}
+
+function searchProps() {
+  searchQuery = document.getElementById('search-input').value.trim();
+  loadProps(true);
+}
+
+function loadMore() {
+  currentPage++;
+  loadProps(false);
+}
+
+// Detail
+async function showDetail(id) {
+  const {ok,data} = await api('/properties/'+id);
+  if (!ok) return toast('Failed to load property','error');
+  currentProp = data;
+  const p = data;
+  const imgs = (p.photos||[]).map(f=>API.replace('/api','')+'/uploads/'+f);
+  const isFav = p.is_favorited||false;
+  const modal = document.getElementById('modal-area');
+  modal.innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      ${imgs.length ? `<img class="detail-img" src="${imgs[0]}" onerror="this.style.display='none'">` : ''}
+      <div class="flex justify-between items-center mt-8">
+        <span class="prop-price">KSh ${(+p.price).toLocaleString()}/mo</span>
+        <button class="heart-btn ${isFav?'liked':''}" onclick="toggleFav('${p.id}')"><i class="${isFav?'fas':'far'} fa-heart"></i></button>
+      </div>
+      <h2 style="margin:8px 0">${p.title||'Untitled'}</h2>
+      <p style="color:var(--text2)"><i class="fas fa-map-marker-alt"></i> ${p.location||'N/A'}</p>
+      <p class="mt-8">${p.description||''}</p>
+      <div class="detail-grid mt-16">
+        <div class="detail-item"><div class="label">Bedrooms</div><div class="value">${p.bedrooms||'N/A'}</div></div>
+        <div class="detail-item"><div class="label">Bathrooms</div><div class="value">${p.bathrooms||'N/A'}</div></div>
+        <div class="detail-item"><div class="label">Size</div><div class="value">${p.sqft||'N/A'} sqft</div></div>
+        <div class="detail-item"><div class="label">Type</div><div class="value">${p.property_type||'N/A'}</div></div>
+        <div class="detail-item"><div class="label">Status</div><div class="value">${p.status||'available'}</div></div>
+        <div class="detail-item"><div class="label">Parking</div><div class="value">${p.parking?'Yes':'No'}</div></div>
+      </div>
+      ${p.water||p.electricity ? `<div class="mt-8 flex gap-8 flex-wrap">${p.water?'<span class="chip"><i class="fas fa-tint"></i> Water</span>':''}${p.electricity?'<span class="chip"><i class="fas fa-bolt"></i> Electricity</span>':''}</div>` : ''}
+      <div class="mt-16 flex gap-8">
+        ${getUserType()!=='landlord' ? `<button class="btn-primary flex-1" onclick="inquireBooking('${p.id}')"><i class="fas fa-calendar-plus"></i> Inquire</button>` : ''}
+        ${getUserType()==='landlord'&&p.owner_id===user?.id ? `<button class="btn-outline" onclick="editProperty('${p.id}')"><i class="fas fa-edit"></i></button><button class="btn-danger" onclick="deleteProperty('${p.id}')"><i class="fas fa-trash"></i></button>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function closeModal() { document.getElementById('modal-area').innerHTML = ''; }
+
+// Favorites
+async function toggleFav(propertyId) {
+  if (!token) { toast('Sign in to save','error'); return; }
+  const {ok,data} = await api('/favorites/'+propertyId, {method:'DELETE'});
+  if (ok||(data.msg||'').includes('not found')) {
+    const {ok:ok2} = await api('/favorites', {method:'POST', body:JSON.stringify({property_id:propertyId})});
+    if (!ok2) return toast('Failed to save','error');
+    toast('Added to favorites');
+  } else {
+    toast('Removed from favorites');
+  }
+  loadProps(true);
+}
+
+async function loadFavorites() {
+  show('fav-loading'); hide('fav-grid'); hide('fav-empty');
+  const {ok,data} = await api('/favorites');
+  hide('fav-loading');
+  if (!ok||!data||data.length===0) { show('fav-empty'); return; }
+  show('fav-grid');
+  document.getElementById('fav-grid').innerHTML = data.map(f=>{
+    const p = f.property||{};
+    const img = p.photos&&p.photos[0] ? API.replace('/api','')+'/uploads/'+p.photos[0] : '';
+    return `<div class="card" onclick="showDetail('${p.id}')">
+      ${img?`<img class="prop-img" src="${img}" onerror="this.src=''">`:'<div class="prop-img" style="display:flex;align-items:center;justify-content:center;color:var(--text2)"><i class="fas fa-image" style="font-size:40px"></i></div>'}
+      <div class="prop-price">KSh ${(+p.price||0).toLocaleString()}/mo</div>
+      <div class="prop-title">${p.title||''}</div>
+      <div class="prop-location">${p.location||''}</div>
+    </div>`;
+  }).join('');
+}
+
+// Bookings
+async function loadBookings() { switchBookingsTab('tenant') }
+
+async function switchBookingsTab(tab) {
+  document.querySelectorAll('[id^=bookings-tab-]').forEach(b=>b.style.border='1px solid var(--border)');
+  const btn = document.getElementById('bookings-tab-'+tab);
+  if (btn) btn.style.border = '1px solid var(--primary)';
+  const ep = tab==='landlord' ? '/bookings/landlord' : '/bookings';
+  const content = document.getElementById('bookings-content');
+  content.innerHTML = '<div class="spinner"></div>';
+  const {ok,data} = await api(ep);
+  if (!ok||!data||data.length===0) { content.innerHTML = '<p style="text-align:center;padding:40px;color:var(--text2)">No bookings</p>'; return; }
+  content.innerHTML = data.map(b=>{
+    const p = b.property||{};
+    return `<div class="card">
+      <div class="flex justify-between items-center">
+        <div><strong>${p.title||'Property'}</strong></div>
+        <span class="chip" style="background:${b.status==='confirmed'?'var(--success)':b.status==='pending'?'var(--primary)':'var(--text2)'}">${b.status||'pending'}</span>
+      </div>
+      ${b.message?`<p class="mt-8 text-sm">${b.message}</p>`:''}
+      <div class="mt-8 flex gap-8">
+        ${tab==='landlord'&&b.status==='pending'?`<button class="btn-primary" onclick="updateBooking('${b.id}','confirmed')">Accept</button><button class="btn-outline" onclick="updateBooking('${b.id}','rejected')">Reject</button>`:''}
+        ${tab==='tenant'&&b.status==='pending'?`<button class="btn-danger" onclick="updateBooking('${b.id}','cancelled')">Cancel</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function updateBooking(id, status) {
+  const {ok} = await api('/bookings/'+id, {method:'PUT', body:JSON.stringify({status})});
+  if (!ok) return toast('Failed to update','error');
+  toast('Booking '+status);
+  loadBookings();
+}
+
+function inquireBooking(propertyId) {
+  const mid = document.getElementById('modal-area');
+  mid.innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h2>Inquire About This Property</h2>
+      <div class="form-group"><label>Message (optional)</label><textarea id="booking-msg" placeholder="Tell the landlord when you'd like to view..."></textarea></div>
+      <button class="btn-primary" onclick="submitBooking('${propertyId}')">Send Inquiry</button>
+      <button class="btn-outline mt-8" onclick="closeModal()" style="width:100%">Cancel</button>
+    </div>
+  </div>`;
+}
+
+async function submitBooking(propertyId) {
+  const msg = document.getElementById('booking-msg').value.trim();
+  const {ok} = await api('/bookings', {method:'POST', body:JSON.stringify({property_id:propertyId, message:msg})});
+  if (!ok) return toast('Failed to send','error');
+  toast('Inquiry sent!');
+  closeModal();
+}
+
+// Reminders
+async function loadReminders() {
+  const c = document.getElementById('reminders-content');
+  c.innerHTML = '<div class="spinner"></div>';
+  const {ok,data} = await api('/agents/reminders');
+  if (!ok||!data||data.length===0) { c.innerHTML = '<p style="text-align:center;padding:40px;color:var(--text2)">No reminders</p>'; return; }
+  c.innerHTML = data.map(r=>`<div class="card">
+    <div class="flex justify-between items-center">
+      <div><strong>${r.title||''}</strong> — ${r.tenant_name||r.tenant_id||''}</div>
+      <div class="flex gap-8"><button class="btn-outline" onclick="editReminder('${r.id}')"><i class="fas fa-edit"></i></button><button class="btn-danger" onclick="deleteReminder('${r.id}')"><i class="fas fa-trash"></i></button></div>
+    </div>
+    ${r.note?`<p class="mt-8 text-sm">${r.note}</p>`:''}
+    <div class="mt-8 flex gap-8">
+      <span class="chip">Due: ${r.due_date||'N/A'}</span>
+      <span class="chip" style="background:${r.status==='sent'?'var(--success)':r.status==='overdue'?'var(--danger)':'var(--surface2)'}">${r.status||'pending'}</span>
+    </div>
+  </div>`).join('');
+}
+
+function showReminderForm(data) {
+  editingReminder = data||null;
+  const mid = document.getElementById('modal-area');
+  mid.innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h2>${editingReminder?'Edit':'New'} Reminder</h2>
+      <div class="form-group"><label>Title</label><input id="rem-title" value="${editingReminder?.title||''}"></div>
+      <div class="form-group"><label>Tenant</label><input id="rem-tenant" value="${editingReminder?.tenant_name||editingReminder?.tenant_id||''}"></div>
+      <div class="form-group"><label>Due Date</label><input type="date" id="rem-date" value="${editingReminder?.due_date||''}"></div>
+      <div class="form-group"><label>Note</label><textarea id="rem-note">${editingReminder?.note||''}</textarea></div>
+      <button class="btn-primary" onclick="saveReminder()">${editingReminder?'Update':'Create'}</button>
+      <button class="btn-outline mt-8" onclick="closeModal()" style="width:100%">Cancel</button>
+    </div>
+  </div>`;
+}
+
+async function saveReminder() {
+  const body = {
+    title: document.getElementById('rem-title').value.trim(),
+    tenant_name: document.getElementById('rem-tenant').value.trim(),
+    due_date: document.getElementById('rem-date').value,
+    note: document.getElementById('rem-note').value.trim(),
+  };
+  if (!body.title||!body.due_date) return toast('Title and due date required','error');
+  const url = editingReminder ? '/agents/reminders/'+editingReminder.id : '/agents/reminders';
+  const method = editingReminder ? 'PUT' : 'POST';
+  const {ok} = await api(url, {method, body:JSON.stringify(body)});
+  if (!ok) return toast('Failed to save','error');
+  toast(editingReminder?'Updated':'Created');
+  closeModal();
+  loadReminders();
+}
+
+function editReminder(id) {
+  const c = document.getElementById('reminders-content');
+  const card = c.querySelector(`[data-id="${id}"]`);
+  showReminderForm({id,...});
+}
+
+async function deleteReminder(id) {
+  if (!confirm('Delete this reminder?')) return;
+  const {ok} = await api('/agents/reminders/'+id, {method:'DELETE'});
+  if (!ok) return toast('Failed to delete','error');
+  toast('Deleted');
+  loadReminders();
+}
+
+// Profile
+async function loadProfile() {
+  const c = document.getElementById('profile-content');
+  const ut = getUserType();
+  const {data:me} = await api('/auth/me').catch(()=>({data:null}));
+  const u = me||user||{};
+  const {data:sub} = await api('/subscriptions/status').catch(()=>({data:{active:false}}));
+  c.innerHTML = `<div class="card">
+    <div class="flex items-center gap-12">
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700">${(u.name||'?')[0].toUpperCase()}</div>
+      <div><div style="font-size:18px;font-weight:600">${u.name||''}</div><div style="color:var(--text2)">${u.email||''}</div><div>+${u.phone||''}</div><span class="chip mt-8">${(u.user_type||'').toUpperCase()}</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Subscription</h3>
+    ${sub?.active ? '<p class="mt-8" style="color:var(--success)"><i class="fas fa-check-circle"></i> Active</p>' : '<p class="mt-8" style="color:var(--text2)">No active subscription</p>'}
+    ${(ut==='landlord'||ut==='agent')&&!sub?.active ? `<button class="btn-primary mt-8" onclick="subscribe('${ut}')"><i class="fas fa-payment"></i> Subscribe KSh ${ut==='landlord'?'1,000':'500'}/mo</button>` : ''}
+  </div>
+  <div class="card">
+    <h3>API URL</h3>
+    <p class="text-sm mt-8">${API}</p>
+  </div>
+  <div class="mt-16"><button class="btn-danger" onclick="logout()" style="width:100%"><i class="fas fa-sign-out-alt"></i> Sign Out</button></div>`;
+}
+
+async function subscribe(type) {
+  const {ok} = await api('/subscriptions/initiate', {method:'POST', body:JSON.stringify({plan_type:type})});
+  if (ok) toast('Subscription initiated (mock)'); else toast('Failed','error');
+  loadProfile();
+}
+
+// Post / Edit property
+function showPostProperty(data) {
+  editingProperty = data||null;
+  const mid = document.getElementById('modal-area');
+  mid.innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h2>${editingProperty?'Edit':'Post'} Property</h2>
+      <div class="form-group"><label>Title</label><input id="prop-title" value="${editingProperty?.title||''}"></div>
+      <div class="form-group"><label>Price (KSh/mo)</label><input type="number" id="prop-price" value="${editingProperty?.price||''}"></div>
+      <div class="form-group"><label>Location</label><input id="prop-location" value="${editingProperty?.location||''}"></div>
+      <div class="form-group"><label>Type</label><select id="prop-type"><option value="apartment" ${editingProperty?.property_type==='apartment'?'selected':''}>Apartment</option><option value="house" ${editingProperty?.property_type==='house'?'selected':''}>House</option><option value="commercial" ${editingProperty?.property_type==='commercial'?'selected':''}>Commercial</option></select></div>
+      <div class="grid-2" style="grid-template-columns:1fr 1fr">
+        <div class="form-group"><label>Bedrooms</label><input type="number" id="prop-beds" value="${editingProperty?.bedrooms||''}"></div>
+        <div class="form-group"><label>Bathrooms</label><input type="number" id="prop-baths" value="${editingProperty?.bathrooms||''}"></div>
+      </div>
+      <div class="form-group"><label>Size (sqft)</label><input type="number" id="prop-sqft" value="${editingProperty?.sqft||''}"></div>
+      <div class="form-group"><label>Description</label><textarea id="prop-desc">${editingProperty?.description||''}</textarea></div>
+      <div class="flex gap-16 items-center mb-16">
+        <label><input type="checkbox" id="prop-parking" ${editingProperty?.parking?'checked':''}> Parking</label>
+        <label><input type="checkbox" id="prop-water" ${editingProperty?.water?'checked':''}> Water</label>
+        <label><input type="checkbox" id="prop-elect" ${editingProperty?.electricity?'checked':''}> Electricity</label>
+      </div>
+      <button class="btn-primary" onclick="saveProperty()">${editingProperty?'Update':'Post Property'}</button>
+      <button class="btn-outline mt-8" onclick="closeModal()" style="width:100%">Cancel</button>
+    </div>
+  </div>`;
+}
+
+async function saveProperty() {
+  const body = {
+    title: document.getElementById('prop-title').value.trim(),
+    price: +(document.getElementById('prop-price').value||0),
+    location: document.getElementById('prop-location').value.trim(),
+    property_type: document.getElementById('prop-type').value,
+    bedrooms: +(document.getElementById('prop-beds').value||0),
+    bathrooms: +(document.getElementById('prop-baths').value||0),
+    sqft: +(document.getElementById('prop-sqft').value||0),
+    description: document.getElementById('prop-desc').value.trim(),
+    parking: document.getElementById('prop-parking').checked,
+    water: document.getElementById('prop-water').checked,
+    electricity: document.getElementById('prop-elect').checked,
+  };
+  if (!body.title||!body.price||!body.location) return toast('Title, price, location required','error');
+  const url = editingProperty ? '/properties/'+editingProperty.id : '/properties';
+  const method = editingProperty ? 'PUT' : 'POST';
+  const {ok} = await api(url, {method, body:JSON.stringify(body)});
+  if (!ok) return toast('Failed to save property','error');
+  toast(editingProperty?'Updated':'Posted!');
+  closeModal();
+  loadProps();
+}
+
+function editProperty(id) {
+  closeModal();
+  api('/properties/'+id).then(({ok,data})=>{if(ok)showPostProperty(data)});
+}
+
+async function deleteProperty(id) {
+  if (!confirm('Delete this property?')) return;
+  closeModal();
+  const {ok} = await api('/properties/'+id, {method:'DELETE'});
+  if (!ok) return toast('Failed to delete','error');
+  toast('Deleted');
+  loadProps();
+}
+
+// Init
+if (token) { enterApp(); } else { loadProps(); }
+
+// Fix edit reminder
+function editReminder(id) {
+  api('/agents/reminders').then(({ok,data})=>{
+    if (ok) {
+      const r = (data||[]).find(x=>x.id===id||x.id?.toString()===id?.toString());
+      if (r) showReminderForm(r);
+    }
+  });
+}
+</script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 import os
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, send_file
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
@@ -31,6 +31,20 @@ def create_app(config_class=Config):
     app.register_blueprint(subscriptions_bp)
     app.register_blueprint(favorites_bp)
     app.register_blueprint(bookings_bp)
+
+    # Frontend directory
+    frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend")
+
+    @app.route("/")
+    def index():
+        return send_file(os.path.join(frontend_dir, "index.html"))
+
+    @app.route("/<path:fallback>")
+    def spa_fallback(fallback):
+        if fallback.startswith("api/") or fallback.startswith("uploads/"):
+            from flask import abort
+            abort(404)
+        return send_file(os.path.join(frontend_dir, "index.html"))
 
     # Serve uploaded files
     upload_dir = app.config.get("UPLOAD_FOLDER",
