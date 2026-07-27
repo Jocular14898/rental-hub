@@ -24,6 +24,12 @@ jobs:
           flutter-version: '3.24.x'
           channel: 'stable'
 
+      - name: Accept Android licenses
+        run: yes | flutter doctor --android-licenses 2>/dev/null || true
+
+      - name: Generate platform directories
+        run: flutter create --project-name rental_hub --org com.rentalhub --platforms android .
+
       - name: Install dependencies
         run: flutter pub get
 
